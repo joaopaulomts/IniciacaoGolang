@@ -1,12 +1,25 @@
 package main
 
 import (
-	"auction_golang/internal/entity/auction_entity"
-	"fmt"
+	auction_controller "auction_golang/internal/infra/api"
+	auction_repository_impl "auction_golang/internal/infra/repository/auction"
+	create_auction_use_case "auction_golang/usecase/auction_usecase"
+
+	"github.com/gin-gonic/gin"
 )
 
 func main() {
-	a := auction_entity.CreateAuction("Opala", auction_entity.New)
+	router := gin.Default()
+	repository := &auction_repository_impl.AuctionRepositoryImpl{}
+	usecase := create_auction_use_case.NewAuctionUseCase(repository)
+	controller := auction_controller.AuctionController{
+		CreateAuctionUseCase: usecase,
+	}
 
-	fmt.Printf("Id %s", a.Id)
+	router.POST("/auction", controller.Create)
+
+	err := router.Run(":8000")
+	if err != nil {
+		panic(err)
+	}
 }
